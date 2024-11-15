@@ -78,7 +78,7 @@ void send_vectors(int socket, const std::vector<std::vector<double>>& vectors) {
             return;
         }
         size_t data_size = vec.size() * sizeof(double);
-        if (send(socket, vec.data(), data_size, 0) != data_size) {
+        if (static_cast<size_t>(send(socket, vec.data(), data_size, 0)) != data_size) {
             std::cerr << "Error: Failed to send vector data.\n";
             return;
         }
