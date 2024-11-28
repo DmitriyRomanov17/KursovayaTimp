@@ -9,7 +9,7 @@ SOURCES = main.cpp \
 		 include/DataWriter.cpp \
 		 include/UserInterface.cpp
 
-LIBRARIES = library/libcryptopp.a
+LIBRARIES = library/cryptopp/libcryptopp.a
 
 all: build
 
