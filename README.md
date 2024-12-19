@@ -73,3 +73,28 @@ Example of launching the program:
 
 ./client -a 127.0.0.1 -p 33333 -i input.txt -o output.bin -c .config/client.config
 ```
+
+## How to test
+
+If you want to test the client, enter the following command in the terminal:
+
+```bash
+make test
+```
+
+If everything was successful, you should see the following output in the terminal:
+
+```txt
+g++ -std=c++17 -Wall -I/usr/include/UnitTest++ test.cpp -o client_test -L/usr/lib/x86_64-linux-gnu -lUnitTest++
+./client_test
+Success: 9 tests passed.
+Test time: 0.00 seconds.
+rm -f client_test
+```
+
+Note that we use the UnitTest++ library for testing. Therefore, if the test does not start, it is possible that this library is simply not installed on your device or has an outdated version. To make it work, enter the following command:
+
+```bash
+sudo apt update
+sudo apt install libunittest++-dev
+```
