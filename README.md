@@ -7,26 +7,9 @@ This repository contains the source code for a simple TCP client that was specif
 First, you must copy this repository locally to your computer using the following command:
 
 ```bash
-git clone repository_name
+git clone https://github.com/DmitriyRomanov17/KursovayaTimp.git
 ```
 
-We need to build the library needed for the application to work.
-To do this, go to the directory containing the source code for this library:
-```bash
-cd library/cryptoop
-```
-
-Command to build a library:
-```bash
-make
-```
-
-Return to the original directory:
-
-```bash
-cd ../..
-
-```
 
 Next, we need to build our project using the following command:
 
@@ -88,5 +71,5 @@ Example of launching the program:
 
 ```bash
 
-./client -a 127.0.0.1 -p 33333 -i input.txt -o output.bin -c client.config
-```S
+./client -a 127.0.0.1 -p 33333 -i input.txt -o output.bin -c .config/client.config
+```

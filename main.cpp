@@ -5,12 +5,9 @@
 #include <sstream>
 #include <cstring>
 #include <vector>
+#include <algorithm>
 
-#include "library/cryptopp/cryptlib.h"
-#include "library/cryptopp/osrng.h"
-#include "library/cryptopp/sha.h"
-#include "library/cryptopp/hex.h"
-
+#include "include/SHA256Library.h" // Собственная библиотека SHA256
 #include "include/UserInterface.h"
 #include "include/Communicator.h"
 #include "include/DataReader.h"
@@ -34,7 +31,7 @@ void readLoginPassword(const std::string& configFile, std::string& login, std::s
     }
 }
 
-void authenticateAsClient(Communicator& comm, const std::string& password, CryptoPP::SHA256& hash) {
+void authenticateAsClient(Communicator& comm, const std::string& password) {
     std::string username = "user";
     comm.sendMessage(username);
 
@@ -43,12 +40,11 @@ void authenticateAsClient(Communicator& comm, const std::string& password, Crypt
 
     std::string combined = salt + password;
 
-    std::string calculatedHash;
-    CryptoPP::StringSource(
-        combined, true,
-        new CryptoPP::HashFilter(hash,
-                                 new CryptoPP::HexEncoder(
-                                     new CryptoPP::StringSink(calculatedHash))));
+    std::string calculatedHash = SHA256Library::hash(combined);
+    
+    for (char& c : calculatedHash) {
+        c = std::toupper(static_cast<unsigned char>(c));
+    }
 
     comm.sendMessage(calculatedHash);
 
@@ -58,6 +54,9 @@ void authenticateAsClient(Communicator& comm, const std::string& password, Crypt
         throw std::runtime_error("Authentication failed");
     }
 }
+
+
+
 
 std::vector<std::vector<double>> readInputFile(const std::string& inputFile) {
     std::ifstream file(inputFile);
@@ -105,8 +104,7 @@ int main(int argc, char** argv) {
         std::string login, password;
         readLoginPassword(ui.configFile, login, password);
 
-        CryptoPP::SHA256 sha256Hash;
-        authenticateAsClient(comm, password, sha256Hash);
+        authenticateAsClient(comm, password);
 
         auto vectors = readInputFile(ui.inputFile);
         std::vector<double> results;
@@ -134,3 +132,4 @@ int main(int argc, char** argv) {
 
     return 0;
 }
+

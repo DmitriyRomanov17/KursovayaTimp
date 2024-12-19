@@ -9,10 +9,8 @@ SOURCES = main.cpp \
 		 include/DataWriter.cpp \
 		 include/UserInterface.cpp
 
-LIBRARIES = library/cryptopp/libcryptopp.a
-
 all: build
 
 build:
-	$(CXX) $(CXXFLAGS) $(SOURCES) $(LIBRARIES) -o $(TARGET)
+	$(CXX) $(CXXFLAGS) $(SOURCES) -o $(TARGET)
 
