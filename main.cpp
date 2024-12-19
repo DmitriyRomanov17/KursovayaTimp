@@ -1,3 +1,14 @@
+/**
+ * @file main.cpp
+ * @brief Главный файл программы для взаимодействия с сервером и обработки данных.
+ * 
+ * Этот файл реализует клиентскую часть взаимодействия, включая:
+ * - Чтение конфигурации.
+ * - Аутентификацию.
+ * - Отправку данных на сервер.
+ * - Получение результатов.
+ */
+
 #include <stdexcept>
 #include <iterator>
 #include <iostream>
@@ -13,123 +24,58 @@
 #include "include/DataReader.h"
 #include "include/DataWriter.h"
 
+/** @brief Тип данных для обработки. */
 const std::string dataType = "double";
+/** @brief Тип хеширования для аутентификации. */
 const std::string hashType = "SHA256";
+/** @brief Определяет сторону, где используется "соль". */
 const std::string saltSide = "server";
 
-void readLoginPassword(const std::string& configFile, std::string& login, std::string& password) {
-    std::ifstream config(configFile);
-    if (!config) {
-        throw std::runtime_error("Failed to open config file: " + configFile);
-    }
+/**
+ * @brief Считывает логин и пароль из конфигурационного файла.
+ * @param configFile Путь к конфигурационному файлу.
+ * @param login Переменная для хранения логина.
+ * @param password Переменная для хранения пароля.
+ * @throw std::runtime_error Если файл недоступен или содержит некорректные данные.
+ */
+void readLoginPassword(const std::string& configFile, std::string& login, std::string& password);
 
-    std::getline(config, login);
-    std::getline(config, password);
+/**
+ * @brief Аутентифицирует клиента на сервере.
+ * @param comm Объект класса Communicator для взаимодействия с сервером.
+ * @param password Пароль для аутентификации.
+ * @throw std::runtime_error Если аутентификация не удалась.
+ */
+void authenticateAsClient(Communicator& comm, const std::string& password);
 
-    if (login.empty() || password.empty()) {
-        throw std::runtime_error("Invalid login or password in config file.");
-    }
-}
+/**
+ * @brief Считывает входной файл с векторами данных.
+ * @param inputFile Путь к входному файлу.
+ * @return Векторы данных, считанные из файла.
+ * @throw std::runtime_error Если файл недоступен.
+ */
+std::vector<std::vector<double>> readInputFile(const std::string& inputFile);
 
-void authenticateAsClient(Communicator& comm, const std::string& password) {
-    std::string username = "user";
-    comm.sendMessage(username);
+/**
+ * @brief Записывает результаты в файл.
+ * @param outputFile Путь к выходному файлу.
+ * @param results Вектор результатов для записи.
+ * @throw std::runtime_error Если файл недоступен.
+ */
+void writeResults(const std::string& outputFile, const std::vector<double>& results);
 
-    std::string salt(16, '\0');
-    comm.receiveMessage(salt.data(), 16);
-
-    std::string combined = salt + password;
-
-    std::string calculatedHash = SHA256Library::hash(combined);
-    
-    for (char& c : calculatedHash) {
-        c = std::toupper(static_cast<unsigned char>(c));
-    }
-
-    comm.sendMessage(calculatedHash);
-
-    char response[2];
-    comm.receiveMessage(response, sizeof(response));
-    if (std::string(response, 2) != "OK") {
-        throw std::runtime_error("Authentication failed");
-    }
-}
-
-
-
-
-std::vector<std::vector<double>> readInputFile(const std::string& inputFile) {
-    std::ifstream file(inputFile);
-    if (!file) {
-        throw std::runtime_error("Failed to open input file: " + inputFile);
-    }
-
-    std::vector<std::vector<double>> vectors;
-    std::string line;
-    while (std::getline(file, line)) {
-        std::istringstream iss(line);
-        vectors.emplace_back((std::istream_iterator<double>(iss)), std::istream_iterator<double>());
-    }
-
-    return vectors;
-}
-
-void writeResults(const std::string& outputFile, const std::vector<double>& results) {
-    std::ofstream file(outputFile, std::ios::binary);
-    if (!file) {
-        throw std::runtime_error("Failed to open output file: " + outputFile);
-    }
-
-    uint32_t numResults = results.size();
-    file.write(reinterpret_cast<const char*>(&numResults), sizeof(numResults));
-
-    for (const auto& result : results) {
-        file.write(reinterpret_cast<const char*>(&result), sizeof(result));
-    }
-}
-
-int main(int argc, char** argv) {
-    try {
-        if (argc < 2) {
-            std::cerr << "Error: Missing required parameters.\n";
-            UserInterface::printHelp();
-            return 1;
-        }
-
-        UserInterface ui(argc, argv);
-        Communicator comm(ui.serverAddress, ui.serverPort);
-
-        comm.connectToServer();
-
-        std::string login, password;
-        readLoginPassword(ui.configFile, login, password);
-
-        authenticateAsClient(comm, password);
-
-        auto vectors = readInputFile(ui.inputFile);
-        std::vector<double> results;
-
-        uint32_t numVectors = vectors.size();
-        comm.sendMessage(reinterpret_cast<const char*>(&numVectors), sizeof(numVectors));
-
-        for (const auto& vec : vectors) {
-            uint32_t vectorSize = vec.size();
-            comm.sendMessage(reinterpret_cast<const char*>(&vectorSize), sizeof(vectorSize));
-            comm.sendMessage(reinterpret_cast<const char*>(vec.data()), vec.size() * sizeof(double));
-
-            double result;
-            comm.receiveMessage(reinterpret_cast<char*>(&result), sizeof(result));
-            results.push_back(result);
-            std::cout << "Received result: " << result << std::endl;
-        }
-
-        writeResults(ui.outputFile, results);
-
-    } catch (const std::exception& ex) {
-        std::cerr << "Error: " << ex.what() << std::endl;
-        return 1;
-    }
-
-    return 0;
-}
+/**
+ * @brief Точка входа в программу.
+ * 
+ * Реализует:
+ * - Обработку аргументов командной строки.
+ * - Инициализацию объектов.
+ * - Аутентификацию и взаимодействие с сервером.
+ * - Чтение данных из файлов и запись результатов.
+ * 
+ * @param argc Количество аргументов командной строки.
+ * @param argv Массив аргументов командной строки.
+ * @return Код завершения программы (0 - успех, 1 - ошибка).
+ */
+int main(int argc, char** argv);
 

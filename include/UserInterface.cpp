@@ -1,5 +1,10 @@
 #include "UserInterface.h"
 
+/**
+ * @brief Конструктор, инициализирующий параметры командной строки.
+ * @param argc Количество аргументов командной строки.
+ * @param argv Массив аргументов командной строки.
+ */
 UserInterface::UserInterface(int argc, char** argv) : serverPort(33333), configFile(".config/client.config") {
     int opt;
     while ((opt = getopt(argc, argv, "a:p:i:o:c:h")) != -1) {
@@ -28,11 +33,15 @@ UserInterface::UserInterface(int argc, char** argv) : serverPort(33333), configF
         }
     }
 
+    // Проверка на обязательные параметры
     if (serverAddress.empty() || inputFile.empty() || outputFile.empty()) {
         handleError("Missing required parameters.");
     }
 }
 
+/**
+ * @brief Выводит справку по использованию программы.
+ */
 void UserInterface::printHelp() {
     std::cout << "Usage: client -a <server_address> -p <server_port> -i <input_file> -o <output_file> -c <config_file>\n";
     std::cout << "Options:\n";
@@ -44,7 +53,12 @@ void UserInterface::printHelp() {
     std::cout << "  -h             Display help\n";
 }
 
+/**
+ * @brief Обрабатывает ошибку, выводя сообщение и завершает выполнение программы.
+ * @param message Сообщение об ошибке.
+ */
 void UserInterface::handleError(const std::string& message) {
     std::cerr << "Error: " << message << std::endl;
     std::exit(1);
 }
+

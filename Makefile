@@ -13,6 +13,10 @@ SOURCES = main.cpp \
   include/UserInterface.cpp
 SOURCES_TEST = test.cpp
 
+
+DOXYGEN_CONF = documentation/conf
+DOCS_DIR = documentation/docs
+
 all: build
 
 build:
@@ -22,3 +26,9 @@ test:
 	$(CXX) $(CXXFLAGS_TEST) $(SOURCES_TEST) -o $(TARGET_TEST) $(LDFLAGS_TEST)
 	./$(TARGET_TEST)
 	rm -f $(TARGET_TEST)
+
+doc:
+	doxygen $(DOXYGEN_CONF) 
+
+clean:
+	rm -rf $(DOCS_DIR)

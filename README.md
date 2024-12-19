@@ -98,3 +98,23 @@ Note that we use the UnitTest++ library for testing. Therefore, if the test does
 sudo apt update
 sudo apt install libunittest++-dev
 ```
+
+# How to generate documentation
+
+If you want to generate documentation for this client, use the following commands:
+
+```bash
+make doc
+cd documentation/docs/latex
+make
+```
+
+If you are getting errors, try installing the following commands:
+
+```bash
+sudo apt update
+sudo apt install texlive texlive-latex-extra texlive-fonts-recommended
+sudo apt-get install texlive-lang-cyrillic
+```
+
+The documentation file is called  _refman.pdf_.
