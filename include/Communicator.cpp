@@ -1,26 +1,33 @@
 /**
  * @file Communicator.cpp
- * @brief Реализация класса для взаимодействия с сервером.
+ * @brief Implementation of the Communicator class for handling communication with a server.
  * 
- * Класс Communicator предоставляет методы для подключения к серверу,
- * отправки и получения сообщений.
+ * This file contains the implementation of the `Communicator` class, which provides functionality 
+ * for creating a socket, connecting to a server, sending and receiving messages over the network.
+ * It is used for establishing a TCP connection to a server and exchanging data between the client 
+ * and the server.
+ * 
+ * @author Romanov D.E.
+ * @date 2024-12-19
  */
 
 #include "Communicator.h"
 
 /**
- * @brief Конструктор класса Communicator.
+ * @class Communicator
+ * @brief A class for managing communication with a server.
  * 
- * @param serverAddress Адрес сервера.
- * @param serverPort Порт сервера.
+ * The `Communicator` class provides methods for creating a socket, connecting to a server, 
+ * sending messages, and receiving messages.
  */
 Communicator::Communicator(const std::string& serverAddress, int serverPort)
     : socketFd(-1), serverAddress(serverAddress), serverPort(serverPort) {}
 
 /**
- * @brief Деструктор класса Communicator.
+ * @brief Destructor that closes the socket if it is open.
  * 
- * Закрывает сокет, если он был открыт.
+ * This destructor ensures that the socket is closed when the `Communicator` object is destroyed.
+ * If the socket was successfully created (i.e., `socketFd` is not -1), it will be closed.
  */
 Communicator::~Communicator() {
     if (socketFd != -1) {
@@ -29,11 +36,15 @@ Communicator::~Communicator() {
 }
 
 /**
- * @brief Подключается к серверу.
+ * @brief Connects to the server using the provided address and port.
  * 
- * Создает сокет и устанавливает соединение с указанным сервером.
+ * This method creates a socket, sets up the server address structure, and attempts to connect 
+ * to the specified server using the `serverAddress` and `serverPort` passed during the 
+ * construction of the `Communicator` object. If any of these steps fail, an exception will 
+ * be thrown.
  * 
- * @throw std::runtime_error Если не удалось создать сокет или подключиться.
+ * @throws std::runtime_error If the socket cannot be created, the server address is invalid, 
+ *                             or the connection to the server fails.
  */
 void Communicator::connectToServer() {
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -54,23 +65,29 @@ void Communicator::connectToServer() {
 }
 
 /**
- * @brief Отправляет строковое сообщение на сервер.
+ * @brief Sends a string message to the server.
  * 
- * @param message Сообщение для отправки.
+ * This method sends the given message to the server over the established socket connection. 
+ * It internally calls the `sendMessage` method that sends the message as raw data.
  * 
- * @throw std::runtime_error Если отправка данных не удалась.
+ * @param message The message to send to the server.
+ * 
+ * @throws std::runtime_error If the data cannot be sent to the server.
  */
 void Communicator::sendMessage(const std::string& message) {
     sendMessage(message.c_str(), message.size());
 }
 
 /**
- * @brief Отправляет массив байтов на сервер.
+ * @brief Sends raw data to the server.
  * 
- * @param data Указатель на массив данных.
- * @param size Размер массива данных.
+ * This method sends the provided data to the server. The data is sent using the `send` 
+ * system call. The size of the data is specified by the `size` parameter.
  * 
- * @throw std::runtime_error Если отправка данных не удалась.
+ * @param data The raw data to send to the server.
+ * @param size The size of the data to send.
+ * 
+ * @throws std::runtime_error If the data cannot be sent to the server.
  */
 void Communicator::sendMessage(const char* data, size_t size) {
     if (send(socketFd, data, size, 0) == -1) {
@@ -79,12 +96,17 @@ void Communicator::sendMessage(const char* data, size_t size) {
 }
 
 /**
- * @brief Получает строковое сообщение с сервера.
+ * @brief Receives a message from the server with the specified buffer size.
  * 
- * @param bufferSize Размер буфера для чтения.
- * @return Полученное сообщение.
+ * This method receives a message from the server into a buffer of the specified size. The 
+ * received data is returned as a string. If the number of bytes received is less than expected, 
+ * the string is resized to match the actual number of bytes received.
  * 
- * @throw std::runtime_error Если получение данных не удалось.
+ * @param bufferSize The size of the buffer to receive data into.
+ * 
+ * @return A string containing the received data.
+ * 
+ * @throws std::runtime_error If the data cannot be received or if the reception fails.
  */
 std::string Communicator::receiveMessage(size_t bufferSize) {
     std::string buffer(bufferSize, '\0');
@@ -97,12 +119,16 @@ std::string Communicator::receiveMessage(size_t bufferSize) {
 }
 
 /**
- * @brief Получает массив байтов от сервера.
+ * @brief Receives a fixed amount of data from the server into a buffer.
  * 
- * @param buffer Указатель на буфер для записи данных.
- * @param size Ожидаемый размер данных.
+ * This method receives exactly the specified amount of data from the server and stores it in 
+ * the provided buffer. If the number of bytes received does not match the expected size, 
+ * an exception is thrown.
  * 
- * @throw std::runtime_error Если размер полученных данных отличается от ожидаемого.
+ * @param buffer The buffer to store the received data.
+ * @param size The exact size of the data to receive.
+ * 
+ * @throws std::runtime_error If the expected amount of data is not received.
  */
 void Communicator::receiveMessage(char* buffer, size_t size) {
     ssize_t bytesRead = recv(socketFd, buffer, size, 0);

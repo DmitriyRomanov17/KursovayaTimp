@@ -1,9 +1,24 @@
+/**
+ * @file UserInterface.cpp
+ * @brief Implementation of the UserInterface class, handling command-line arguments and user input for a client program.
+ * 
+ * This file contains the implementation of the `UserInterface` class, which processes command-line 
+ * arguments passed to the client program, validates the necessary parameters, and displays help messages 
+ * or error messages as needed.
+ * 
+ * @author Romanov D.E.
+ * @date 2024-12-19
+ */
+
 #include "UserInterface.h"
 
 /**
- * @brief Конструктор, инициализирующий параметры командной строки.
- * @param argc Количество аргументов командной строки.
- * @param argv Массив аргументов командной строки.
+ * @class UserInterface
+ * @brief Class that manages user input, parses command-line arguments, and validates input for the client application.
+ * 
+ * The `UserInterface` class handles the parsing of command-line arguments, ensuring that the user provides 
+ * the necessary parameters for the client application to function. It validates the input, handles errors, 
+ * and prints the help message if requested.
  */
 UserInterface::UserInterface(int argc, char** argv) : serverPort(33333), configFile(".config/client.config") {
     int opt;
@@ -33,14 +48,16 @@ UserInterface::UserInterface(int argc, char** argv) : serverPort(33333), configF
         }
     }
 
-    // Проверка на обязательные параметры
     if (serverAddress.empty() || inputFile.empty() || outputFile.empty()) {
         handleError("Missing required parameters.");
     }
 }
 
 /**
- * @brief Выводит справку по использованию программы.
+ * @brief Prints the help message with usage instructions.
+ * 
+ * This method displays the usage instructions for the client application, detailing the available 
+ * command-line options and their descriptions.
  */
 void UserInterface::printHelp() {
     std::cout << "Usage: client -a <server_address> -p <server_port> -i <input_file> -o <output_file> -c <config_file>\n";
@@ -54,8 +71,12 @@ void UserInterface::printHelp() {
 }
 
 /**
- * @brief Обрабатывает ошибку, выводя сообщение и завершает выполнение программы.
- * @param message Сообщение об ошибке.
+ * @brief Handles errors by printing an error message and exiting the program.
+ * 
+ * If an invalid or missing parameter is detected, this method displays the provided error message 
+ * and terminates the program.
+ * 
+ * @param message The error message to be displayed.
  */
 void UserInterface::handleError(const std::string& message) {
     std::cerr << "Error: " << message << std::endl;
